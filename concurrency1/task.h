@@ -1,7 +1,7 @@
 #ifndef TASK_H
 #define TASK_H
 
-#define BUFFER_SIZE 25
+#define BUFFER_SIZE 5
 
 struct task
 {
@@ -11,9 +11,29 @@ struct task
     int time;
 };
 
+/*
+Adds a task to the next available spot
+Sets the specified id and time
+*/
 void addNewTask(int id, int time);
-void removeNextTask();
+/*
+Removes the oldest task. Returns the time value
+*/
+int removeNextTask();
+
+/*
+Returns 0 for empty, 1 for non-empty
+*/
+int isBufferFull();
+/*
+Returns 1 for empty, 0 for non-empty
+*/
+int isBufferEmpty();
 
 extern struct task buffer[];
+//Index of top of buffer
+int bufferTop;
+//Index of bottom of buffer
+int bufferBottom;
 
 #endif
