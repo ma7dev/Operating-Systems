@@ -1,17 +1,20 @@
 #include "consumer.h"
 #include "producer.h"
-
+#include "task.h"
 #include <stdio.h>
-
-//Global buffer of tasks
-struct task buffer[25];
 
 int main(int argc, char* argv[])
 {
-    buffer[0].id = 100;
-    buffer[0].time = 2;
-
-    printf("id: %i | time: %i \n", buffer[0].id, buffer[0].time);
+    //Little testing code
+    produce();
+    produce();
+    produce();
+    consume();
+    int j;
+    for(j=0; j<BUFFER_SIZE; j++){
+        printf("[%i,%i],", buffer[j].id, buffer[j].time);
+    }
+    printf("\n");
 
     /*
     TODO

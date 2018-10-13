@@ -9,9 +9,5 @@ Takes the next element off the buffer
 */
 void consume();
 
-/*
-Returns 0 for empty, 1 for non-empty
-*/
-int isBufferEmpty();
 
 #endif

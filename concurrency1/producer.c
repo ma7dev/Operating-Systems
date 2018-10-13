@@ -1,19 +1,11 @@
 #include "producer.h"
 
-/*
-Adds an element to the buffer. 
-*/
 void produce()
 {
-
-    //Make random
-    //sleep(2);
+    if(!isBufferFull()){
+        //Make random
+        addNewTask(2,2);
+    }
+    //Add sleeps
 }
 
-/*
-Returns 0 for empty, 1 for non-empty
-*/
-int isBufferFull()
-{
-    return 0;
-}
