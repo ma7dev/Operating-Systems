@@ -6,8 +6,9 @@
 
 /*
 Adds an element to the buffer. 
+Returns the amount to sleep
 */
-void produce();
+int produce();
 
 
 #endif

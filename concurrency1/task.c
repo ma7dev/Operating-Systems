@@ -30,12 +30,20 @@ int removeNextTask()
     return time;
 }
 
+void displayBuffer()
+{
+    int j;
+    for(j=bufferBottom; j<(bufferBottom+BUFFER_SIZE); j++){
+        printf("[%i,%i]\t", buffer[j%BUFFER_SIZE].id, buffer[j%BUFFER_SIZE].time);
+    }
+}
+
 /*
 Returns 1 for full, 0 for non-full
 */
 int isBufferFull()
 {
-    if((bufferTop%BUFFER_SIZE) == (bufferBottom%BUFFER_SIZE) && (bufferTop != 0 || bufferBottom != 0) && buffer[bufferBottom].time != 0){
+    if(((bufferTop%BUFFER_SIZE) == (bufferBottom%BUFFER_SIZE)) && (bufferTop != 0 || bufferBottom != 0) && (bufferTop != bufferBottom)){
         //Full
         return 1;
     }
@@ -53,7 +61,7 @@ Returns 1 for empty, 0 for non-empty
 */
 int isBufferEmpty()
 {
-    if((bufferTop%BUFFER_SIZE) == (bufferBottom%BUFFER_SIZE) && buffer[bufferBottom].time == 0){
+    if(((bufferTop%BUFFER_SIZE) == (bufferBottom%BUFFER_SIZE)) && (buffer[bufferBottom].time == 0) && (bufferTop == bufferBottom)){
         //Full
         return 1;
     }
