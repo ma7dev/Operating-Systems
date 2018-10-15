@@ -216,9 +216,6 @@ int generateRandomInt(int minValue, int maxValue)
 	if(ecx & 0x40000000){
 		int num;
         int difference = maxValue - minValue + 1;
-        /*
-
-        */
         asm volatile("rdrand %0":"=r"(num));
         int output = (num % difference)+minValue;
         if(output-minValue < 0){
