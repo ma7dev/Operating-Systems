@@ -2,6 +2,7 @@
 #include <string.h>
 #include "rand.h"
 #include "time.h"
+#include <limits.h>
 
 /* 
    A C-program for MT19937, with initialization improved 2002/1/26.
@@ -176,23 +177,23 @@ double genrand_res53(void)
 } 
 /* These real versions are due to Isaku Wada, 2002/01/09 added */
 
-/*
-RDRAND 
-Copied from https://stackoverflow.com/questions/43389380/working-example-intel-rdrand-in-c-language-how-to-generate-a-float-type-number
-*/
-char randoms(float *randf, float min, float max)
-{
-    int retries= 10;
-    unsigned long long rand64;
+// /*
+// RDRAND 
+// Copied from https://stackoverflow.com/questions/43389380/working-example-intel-rdrand-in-c-language-how-to-generate-a-float-type-number
+// */
+// char randoms(float *randf, float min, float max)
+// {
+//     int retries= 10;
+//     unsigned long long rand64;
 
-    while(retries--) {
-        if ( __builtin_ia32_rdrand64_step(&rand64) ) {
-            *randf= (float)rand64/ULONG_MAX*(max - min) + min;
-            return 1;
-        }
-    }
-    return 0;
-}
+//     while(retries--) {
+//         if (__builtin_ia32_rdrand64_step(&rand64) ) {
+//             *randf= (float)rand64/ULONG_MAX*(max - min) + min;
+//             return 1;
+//         }
+//     }
+//     return 0;
+// }
 
 
 int generateRandomInt(int minValue, int maxValue)
@@ -213,8 +214,17 @@ int generateRandomInt(int minValue, int maxValue)
 	                     );
 	
 	if(ecx & 0x40000000){
-		float randf;
-        randoms(&randf, minValue, maxValue);
+		int num;
+        int difference = maxValue - minValue + 1;
+        /*
+
+        */
+        asm volatile("rdrand %0":"=r"(num));
+        int output = (num % difference)+minValue;
+        if(output-minValue < 0){
+            output = output+difference;
+        }
+        return output;
 	}
 	else{
         int difference = maxValue - minValue + 1; 

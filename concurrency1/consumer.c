@@ -9,7 +9,7 @@ int consume()
     if(!isBufferEmpty()){
         int id = buffer[bufferBottom % BUFFER_SIZE].id;
         int sleepTime = removeNextTask();
-        printf("\t|CONSUMER| Removed [%i,%i]. Sleeping for: %i\n", id, sleepTime);
+        printf("\t|CONSUMER| Removed [%i,%i]. Sleeping for: %i\n", id, sleepTime, sleepTime);
         fflush(NULL);
         return sleepTime;
     }

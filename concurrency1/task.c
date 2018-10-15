@@ -34,7 +34,12 @@ void displayBuffer()
 {
     int j;
     for(j=bufferBottom; j<(bufferBottom+BUFFER_SIZE); j++){
-        printf("[%i,%i]\t", buffer[j%BUFFER_SIZE].id, buffer[j%BUFFER_SIZE].time);
+        if((j+1-bufferBottom)%8 != 0){
+            printf("[%i,%i]\t", buffer[j%BUFFER_SIZE].id, buffer[j%BUFFER_SIZE].time);
+        }
+        else{
+            printf("[%i,%i]\n", buffer[j%BUFFER_SIZE].id, buffer[j%BUFFER_SIZE].time);
+        }
     }
 }
 

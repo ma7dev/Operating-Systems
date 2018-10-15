@@ -1,7 +1,7 @@
 #ifndef TASK_H
 #define TASK_H
 
-#define BUFFER_SIZE 10
+#define BUFFER_SIZE 32
 
 #include <stdio.h>
 
