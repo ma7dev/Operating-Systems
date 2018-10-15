@@ -1,15 +1,25 @@
 #include "consumer.h"
+#include <unistd.h>
+#include <stdio.h>
 
-/*
-Takes the next element off the buffer
-*/
-void consume()
+int consume()
 {
-    int sleepTime;
+    displayBuffer();
+
     if(!isBufferEmpty()){
-        sleepTime = removeNextTask();
+        int id = buffer[bufferBottom % BUFFER_SIZE].id;
+        int sleepTime = removeNextTask();
+        printf("\t|CONSUMER| Removed [%i,%i]. Sleeping for: %i\n", id, sleepTime);
+        fflush(NULL);
+        return sleepTime;
     }
-    //Add sleep
+    else{
+        int sleepTime = generateRandomInt(2,9);
+        printf("\t|CONSUMER| Buffer empty, Sleeping for: %i\n", sleepTime);
+        fflush(NULL);
+        return sleepTime;
+    }
+    return 0;
 }
 
 

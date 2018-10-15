@@ -1,11 +1,25 @@
 #include "producer.h"
+#include <stdio.h>
+#include <unistd.h>
 
-void produce()
+int produce()
 {
+    displayBuffer();
+
     if(!isBufferFull()){
-        //Make random
-        addNewTask(2,2);
+        int id = generateRandomInt(0,99);
+        int t = generateRandomInt(2,9);
+        addNewTask(id,t);
+        printf("\t|PRODUCER| Adding task: [%i,%i]\n", id, t);
+        fflush(NULL);
+        return generateRandomInt(3,7);
     }
-    //Add sleeps
+    else{
+        int sleepTime = generateRandomInt(3,7);
+        printf("\t|PRODUCER| Buffer full, Sleeping for: %i\n", sleepTime);
+        fflush(NULL);
+        return sleepTime;
+    }
+    return 0;
 }
 
