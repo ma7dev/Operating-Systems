@@ -1,5 +1,5 @@
 LATEX	= latex -shell-escape
-BIBTEX	= bibtex
+#BIBTEX	= bibtex
 DVIPS	= dvips
 DVIPDF  = dvipdft
 XDVI	= xdvi -gamma 4
@@ -17,7 +17,7 @@ ps: $(PSF)
 
 $(TRG): %.dvi: %.tex *.bib $(EXAMPLES)
 	$(LATEX) $<
-	$(BIBTEX) $(<:%.tex=%)
+#	$(BIBTEX) $(<:%.tex=%)
 	$(LATEX) $<
 	$(LATEX) $<
 
@@ -25,7 +25,7 @@ $(PSF):%.ps: %.dvi
 	$(DVIPS) -R -Poutline -t letter $< -o $@
 
 $(PDF): %.pdf: %.ps
-	$(DVIPDF) -o $@ $<
+#	$(DVIPDF) -o $@ $<
 	ps2pdf $<
 
 show: $(TRG)
