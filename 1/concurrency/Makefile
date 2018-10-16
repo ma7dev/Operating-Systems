@@ -1,10 +1,13 @@
 CC = gcc
-CFLAGS  = -g -Wall
+CFLAGS  = -g -pthread
 
 default: concurrency
 
-concurrency:  producer.o consumer.o task.o main.o 
-	$(CC) $(CFLAGS) -o concurrency producer.o consumer.o task.o main.o
+concurrency:  producer.o consumer.o task.o main.o rand.o
+	$(CC) $(CFLAGS) -o concurrency producer.o consumer.o task.o main.o rand.o
+
+rand.o:  rand.c rand.h
+	$(CC) $(CFLAGS) -c rand.c
 
 main.o:  main.c consumer.h producer.h task.h rand.h
 	$(CC) $(CFLAGS) -c main.c

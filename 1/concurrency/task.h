@@ -1,7 +1,9 @@
 #ifndef TASK_H
 #define TASK_H
 
-#define BUFFER_SIZE 5
+#define BUFFER_SIZE 32
+
+#include <stdio.h>
 
 struct task
 {
@@ -29,6 +31,8 @@ int isBufferFull();
 Returns 1 for empty, 0 for non-empty
 */
 int isBufferEmpty();
+
+void displayBuffer();
 
 extern struct task buffer[];
 //Index of top of buffer

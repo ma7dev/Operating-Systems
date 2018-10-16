@@ -6,8 +6,9 @@
 
 /*
 Takes the next element off the buffer
+Returns the amount to sleep
 */
-void consume();
+int consume();
 
 
 #endif
