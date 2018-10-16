@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS  = -g -pthread
+CFLAGS  =-Wall -g -pthread
 
 default: concurrency
 

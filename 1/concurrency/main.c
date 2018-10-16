@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <pthread.h>
+#include <unistd.h>
 
 pthread_mutex_t mutex_lock;
 
@@ -37,18 +38,14 @@ int main(int argc, char* argv[])
     pthread_mutex_unlock(&mutex_lock);
 
     pthread_t thread_id_P;
-    pthread_t thread_id_P_2;
     pthread_t thread_id_C; 
 
     pthread_create(&thread_id_C, NULL, consumerThread, (void *)&thread_id_C); 
     pthread_create(&thread_id_P, NULL, producerThread, (void *)&thread_id_P);
-    pthread_create(&thread_id_P_2, NULL, consumerThread, (void *)&thread_id_P_2);
     
     pthread_join(thread_id_C, NULL);
     pthread_join(thread_id_P, NULL);
-    pthread_join(thread_id_P_2, NULL);
     
-
     pthread_mutex_destroy(&mutex_lock);
 
    return 0;
