@@ -1,0 +1,16 @@
+\contentsline {section}{\numberline {1}Log of Commands}{2}
+\contentsline {section}{\numberline {2}Qemu Command-line}{2}
+\contentsline {section}{\numberline {3}Concurrency}{3}
+\contentsline {subsection}{\numberline {3.1}What do you think the main point of this assignment is?}{3}
+\contentsline {subsection}{\numberline {3.2}How did you personally approach the problem? Design decisions, algorithm, etc.}{3}
+\contentsline {subsection}{\numberline {3.3}How did you ensure your solution was correct? Testing details, for instance.}{3}
+\contentsline {subsection}{\numberline {3.4}What did you learn?}{3}
+\contentsline {section}{\numberline {4}Version Control Log}{4}
+\contentsline {section}{\numberline {5}Work Log}{4}
+\contentsline {subsection}{\numberline {5.1}October 3rd, 2018}{4}
+\contentsline {subsection}{\numberline {5.2}October 7th, 2018}{4}
+\contentsline {subsection}{\numberline {5.3}October 8th, 2018}{4}
+\contentsline {subsection}{\numberline {5.4}October 9th, 2018}{4}
+\contentsline {subsection}{\numberline {5.5}October 10th, 2018}{5}
+\contentsline {subsection}{\numberline {5.6}October 14th, 2018}{5}
+\contentsline {subsection}{\numberline {5.7}October 15th, 2018}{5}
