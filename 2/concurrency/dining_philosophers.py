@@ -4,13 +4,7 @@ import threading
 from threading import Thread, Lock, Condition
 
 forks = [Lock() for _ in range(5)]
-philosophers = [
-    Philosopher('Musk', [0, 1]), 
-    Philosopher('Shaggy', [1, 2]), 
-    Philosopher('Spongebob', [2, 3]), 
-    Philosopher('Bojack', [3, 4]),  
-    Philosopher('Solaire', [4, 0])
-]
+occupied = [[" "," "], [" "," "], [" "," "], [" "," "], [" "," "]]
 
 # def display_forks():
 #     for i,fork in enumerate(forks):
@@ -21,14 +15,14 @@ philosophers = [
 #     print(" ")
 
 def display_forks():
+    buffer=""
+    buffer += '------------------------\n'
     for i,fork in enumerate(forks):
         if(fork.locked() == False):
-            print("| I \t del \t |", end=' ')
+            buffer += "| \t del \t |\n"
         else:
-            print("| Occupied by:" , philosophers[i].name, "(", philosophers[i].state,") |", end=' ')
-        if(i % 5 == 0):
-            print(" ")
-
+            buffer += "| \t Occupied by:" + occupied[i][0] + "(" + occupied[i][1] + ") \t |\n"
+    print(buffer)
 class Philosopher(Thread):
     def __init__(self, name, fork):
         Thread.__init__(self)
@@ -40,14 +34,16 @@ class Philosopher(Thread):
         while(True):
             self.think()
             self.get_forks()
-            display_forks()
             self.eat()
             self.put_forks()
 
     def think(self):
         self.state = "thinking"
         delay = randint(1, 20)
-        print('Thinking time = ' + str(delay))
+        buffer=""
+        buffer += '-------------------------\n'
+        buffer += self.name + ': \t Thinking time = ' + str(delay) + "\n"
+        print(buffer)
         time.sleep(delay)
         
     def get_forks(self):
@@ -55,31 +51,54 @@ class Philosopher(Thread):
 
         if (self.fork[0] < self.fork[1]):
             forks[self.fork[0]].acquire(True)
+            occupied[self.fork[0]][0] = self.name
+            occupied[self.fork[1]][0] = self.name
+            occupied[self.fork[0]][1] = self.state
+            occupied[self.fork[1]][1] = self.state
             forks[self.fork[1]].acquire(True)
         else:
             forks[self.fork[1]].acquire(True)
+            occupied[self.fork[0]][0] = self.name
+            occupied[self.fork[1]][0] = self.name
+            occupied[self.fork[0]][1] = self.state
+            occupied[self.fork[1]][1] = self.state
             forks[self.fork[0]].acquire(True)
 
+
     def eat(self):
-        #print('Got forks ---')
+        #pprint('Got forks ---')
         self.state = "eating"
+        occupied[self.fork[0]][0] = self.name
+        occupied[self.fork[1]][0] = self.name
+        occupied[self.fork[0]][1] = self.state
+        occupied[self.fork[1]][1] = self.state
         delay = randint(2, 9)
-        print('Eating time = ' + str(delay))
+        buffer=""
+        buffer += '-------------------------\n'
+        buffer += self.name + ': \t Eating time = ' + str(delay) + '\n'
+        print(buffer)
+        display_forks()
         time.sleep(delay)
-        print(threading.current_thread())
+        #pprint(threading.current_thread())
 
     def put_forks(self):
         if forks[self.fork[0]].locked() and forks[self.fork[1]].locked():
-            #print('Putting forks ---')
+            #pprint('Putting forks ---')
             forks[self.fork[0]].release()
             forks[self.fork[1]].release()
 
 def main():
-
+    philosophers = [
+        Philosopher('Musk', [0, 1]), 
+        Philosopher('Shaggy', [1, 2]), 
+        Philosopher('Spongebob', [2, 3]), 
+        Philosopher('Bojack', [3, 4]),  
+        Philosopher('Solaire', [4, 0])
+    ]
     display_forks()
 
     for ph in philosophers:
-#        print(ph.name)
+#        pprint(ph.name)
         ph.start()
     
     for ph in philosophers:
