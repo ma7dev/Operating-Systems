@@ -78,14 +78,14 @@ static void led_heartbeat_function(unsigned long data)
 			break;
 		//medium gap (between letters)
 		case 2:
-			delay = TIME_UNIT * 3;
+			delay = TIME_UNIT * 2;
 			heartbeat_data->index++;
 			brightness = LED_OFF;
 			heartbeat_data->is_on = 0;
 			break;
 		//big gap (between words)
 		case 3:
-			delay = TIME_UNIT * 7;
+			delay = TIME_UNIT * 6;
 			heartbeat_data->index++;
 			brightness = LED_OFF;
 			heartbeat_data->is_on = 0;
