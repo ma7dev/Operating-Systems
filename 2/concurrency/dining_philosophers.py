@@ -1,34 +1,16 @@
 import time
-from random import randint
 import threading
+from random import randint
 from threading import Thread, Lock, Condition
 
 forks = [Lock() for _ in range(5)]
-occupied = [[" "," "], [" "," "], [" "," "], [" "," "], [" "," "]]
 
-# def display_forks():
-#     for i,fork in enumerate(forks):
-#         status = "available"
-#         if(fork.locked()):
-#             status = "unavailable"
-#         print("fork:" + i + status, philosophers[i] + ": " + state, end=' ')
-#     print(" ")
-
-def display_forks():
-    buffer=""
-    buffer += '------------------------\n'
-    for i,fork in enumerate(forks):
-        if(fork.locked() == False):
-            buffer += "| \t del \t |\n"
-        else:
-            buffer += "| \t Occupied by:" + occupied[i][0] + "(" + occupied[i][1] + ") \t |\n"
-    print(buffer)
 class Philosopher(Thread):
     def __init__(self, name, fork):
         Thread.__init__(self)
         self.name = name
         self.fork = fork
-        self.state = "thinking"
+        self.state = "Thinking"
     
     def run(self):  
         while(True):
@@ -38,67 +20,49 @@ class Philosopher(Thread):
             self.put_forks()
 
     def think(self):
-        self.state = "thinking"
+        self.state = "Thinking"
         delay = randint(1, 20)
-        buffer=""
-        buffer += '-------------------------\n'
-        buffer += self.name + ': \t Thinking time = ' + str(delay) + "\n"
-        print(buffer)
+        print(self.name + ': \t Thinking time = ' + str(delay))
         time.sleep(delay)
         
     def get_forks(self):
-        self.state = "waiting"
-
+        global occupied
+        self.state = "Waiting"
         if (self.fork[0] < self.fork[1]):
             forks[self.fork[0]].acquire(True)
-            occupied[self.fork[0]][0] = self.name
-            occupied[self.fork[1]][0] = self.name
-            occupied[self.fork[0]][1] = self.state
-            occupied[self.fork[1]][1] = self.state
+            print(self.name + ': \t got the fork - ' + str(self.fork[0]))
             forks[self.fork[1]].acquire(True)
+            print(self.name + ': \t got the fork - ' + str(self.fork[1]))
         else:
             forks[self.fork[1]].acquire(True)
-            occupied[self.fork[0]][0] = self.name
-            occupied[self.fork[1]][0] = self.name
-            occupied[self.fork[0]][1] = self.state
-            occupied[self.fork[1]][1] = self.state
+            print(self.name + ': \t got the fork - ' + str(self.fork[1]))
             forks[self.fork[0]].acquire(True)
+            print(self.name + ': \t got the fork - ' + str(self.fork[0]))
 
 
     def eat(self):
-        #pprint('Got forks ---')
-        self.state = "eating"
-        occupied[self.fork[0]][0] = self.name
-        occupied[self.fork[1]][0] = self.name
-        occupied[self.fork[0]][1] = self.state
-        occupied[self.fork[1]][1] = self.state
+        global occupied
+        self.state = "Eating"
         delay = randint(2, 9)
-        buffer=""
-        buffer += '-------------------------\n'
-        buffer += self.name + ': \t Eating time = ' + str(delay) + '\n'
-        print(buffer)
-        display_forks()
+        print(self.name + ': \t Eating time = ' + str(delay))
         time.sleep(delay)
-        #pprint(threading.current_thread())
 
     def put_forks(self):
         if forks[self.fork[0]].locked() and forks[self.fork[1]].locked():
-            #pprint('Putting forks ---')
             forks[self.fork[0]].release()
             forks[self.fork[1]].release()
+            print(self.name + ': \t put the forks down - ' + str(self.fork[0]) + ' and ' + str(self.fork[1]))
 
 def main():
     philosophers = [
-        Philosopher('Musk', [0, 1]), 
+        Philosopher('Elon Musk', [0, 1]), 
         Philosopher('Shaggy', [1, 2]), 
         Philosopher('Spongebob', [2, 3]), 
         Philosopher('Bojack', [3, 4]),  
         Philosopher('Solaire', [4, 0])
     ]
-    display_forks()
 
     for ph in philosophers:
-#        pprint(ph.name)
         ph.start()
     
     for ph in philosophers:
