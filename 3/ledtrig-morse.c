@@ -22,7 +22,7 @@
 #include <linux/reboot.h>
 #include "../leds.h"
 
-#define TIME_UNIT 33
+#define TIME_UNIT 1000
 #define WORD_LENGTH 10
 
 //dot = 0
@@ -155,8 +155,10 @@ static void led_heartbeat_function(unsigned long data)
 	// 	break;
 	// }
 
+	delay = delay * ((double)heartbeat_data->invert + 1)/10;
+
 	led_set_brightness_nosleep(led_cdev, brightness);
-	mod_timer(&heartbeat_data->timer, jiffies + delay);
+	mod_timer(&heartbeat_data->timer, jiffies + msecs_to_jiffies(delay));
 }
 
 static ssize_t led_invert_show(struct device *dev,
@@ -165,7 +167,7 @@ static ssize_t led_invert_show(struct device *dev,
 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
 	struct heartbeat_trig_data *heartbeat_data = led_cdev->trigger_data;
 
-	return sprintf(buf, "%u\n", heartbeat_data->invert);
+	return sprintf(buf, "Speedy: %u\n", heartbeat_data->invert);
 }
 
 static ssize_t led_invert_store(struct device *dev,
@@ -180,7 +182,8 @@ static ssize_t led_invert_store(struct device *dev,
 	if (ret)
 		return ret;
 
-	heartbeat_data->invert = !!state;
+	//heartbeat_data->invert = !!state;
+	heartbeat_data->invert = state;
 
 	return size;
 }
