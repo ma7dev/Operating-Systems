@@ -22,7 +22,7 @@
 #include <linux/reboot.h>
 #include "../leds.h"
 
-#define TIME_UNIT 1000
+#define TIME_UNIT 40
 #define WORD_LENGTH 10
 
 //dot = 0
@@ -105,57 +105,9 @@ static void led_heartbeat_function(unsigned long data)
 			heartbeat_data->is_on = 0;
 			break;
 	}
-
-
-
-	// if (unlikely(panic_heartbeats)) {
-	// 	led_set_brightness_nosleep(led_cdev, LED_OFF);
-	// 	return;
-	// }
-
-	// if (test_and_clear_bit(LED_BLINK_BRIGHTNESS_CHANGE, &led_cdev->work_flags))
-	// 	led_cdev->blink_brightness = led_cdev->new_blink_brightness;
-
-	// /* acts like an actual heart beat -- ie thump-thump-pause... */
-	// switch (heartbeat_data->index) {
-	// case 0:
-	// 	/*
-	// 	 * The hyperbolic function below modifies the
-	// 	 * heartbeat period length in dependency of the
-	// 	 * current (1min) load. It goes through the points
-	// 	 * f(0)=1260, f(1)=860, f(5)=510, f(inf)->300.
-	// 	 */
-	// 	heartbeat_data->period = 300 +
-	// 		(6720 << FSHIFT) / (5 * avenrun[0] + (7 << FSHIFT));
-	// 	heartbeat_data->period =
-	// 		msecs_to_jiffies(heartbeat_data->period);
-	// 	delay = msecs_to_jiffies(70);
-	// 	heartbeat_data->index++;
-	// 	if (!heartbeat_data->invert)
-	// 		brightness = led_cdev->blink_brightness;
-	// 	break;
-	// case 1:
-	// 	delay = heartbeat_data->period / 4 - msecs_to_jiffies(70);
-	// 	heartbeat_data->index++;
-	// 	if (heartbeat_data->invert)
-	// 		brightness = led_cdev->blink_brightness;
-	// 	break;
-	// case 2:
-	// 	delay = msecs_to_jiffies(70);
-	// 	heartbeat_data->index++;
-	// 	if (!heartbeat_data->invert)
-	// 		brightness = led_cdev->blink_brightness;
-	// 	break;
-	// default:
-	// 	delay = heartbeat_data->period - heartbeat_data->period / 4 -
-	// 		msecs_to_jiffies(70);
-	// 	heartbeat_data->index = 0;
-	// 	if (heartbeat_data->invert)
-	// 		brightness = led_cdev->blink_brightness;
-	// 	break;
-	// }
-
-	delay = delay * ((double)heartbeat_data->invert + 1)/10;
+	
+	//Change the speed based in invert 
+	delay = delay * (heartbeat_data->invert + 1);
 
 	led_set_brightness_nosleep(led_cdev, brightness);
 	mod_timer(&heartbeat_data->timer, jiffies + msecs_to_jiffies(delay));
