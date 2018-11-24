@@ -64,8 +64,10 @@ public:
                 if (mSearch.try_lock()){
                     mSearch.unlock(); // Searchers never lock the search mutex
 
-                    if (mDelete.try_lock()) // Searches can't happen with deletes
+                    if (mDelete.try_lock()) {// Searches can't happen with deletes
+                        mDelete.unlock()
                         return 1;
+                    }
                 }
                 return 0;
             }
@@ -73,8 +75,10 @@ public:
             // Inserter Thread
             case 2 : {
                 if (mInsert.try_lock()){
-                    if (mDelete.try_lock()) // Inserts can't happen with deletes
+                    if (mDelete.try_lock()){ // Inserts can't happen with deletes
+                        mDelete.unlock();
                         return 1;
+                    }
                     else
                         mInsert.unlock()
                 }
@@ -83,8 +87,14 @@ public:
 
             // Deleter Thread
             case 2 : {
-                if (mDelete.try_lock()){
-                    return 1;
+                if (mSearch.try_lock()){ // No searches allowed
+                    if(mInsert.try_lock()){ // No inserts allowed
+                        if(mDelete.try_lock()){ // No other deletes allowed
+                            return 1;
+                        }
+                        mInsert.unlock();
+                    }
+                    mSearch.unlock()
                 }
                 return 0;
             }
@@ -98,16 +108,17 @@ public:
 	void unlock(int number){
         Switch(role){
             case 1 : {
-                mDelete.unlock();
+                // nothing to unlock
                 break;
             }
             case 2 :{
                 mInsert.unlock();
-                mDelete.unlock();
                 break;
             }
             case 3 :{
                 mDelete.unlock();
+                mInsert.unlock();
+                mSeach.unlock();
             }
 		}
 	}
