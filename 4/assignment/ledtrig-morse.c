@@ -31,6 +31,7 @@
 
 #define TIME_UNIT 40
 #define WORD_LENGTH 10
+#define MAX_WORD_LENGTH 256
 #define FIRST_MINOR 0
 #define MINOR_CNT 1
 
@@ -81,8 +82,11 @@ int morse_8[7] = {1,1,1,0,0,2};
 int morse_9[7] = {1,1,1,1,0,2};
 int morse_0[7] = {1,1,1,1,1,2};
 
+char* word_buffer;
+size_t word_size = 0;
 
 int word_data[WORD_LENGTH] = {1,0,1,0,2,0,1,2,1,3};
+int word_data_size = 0;
 
 static int panic_heartbeats;
 
@@ -109,22 +113,32 @@ static int my_close(struct inode *i, struct file *f)
 static ssize_t dummy_read(struct file *file, char __user *buf, size_t size, loff_t *ppos)
 {
     printk("CS444 Dummy driver read\r\n");
-    snprintf(buf, size, "Hey there, I'm a dummy!\r\n");
-    return strlen(buf);
+    //snprintf(buf, size, "Hey there, I'm a dummy!\r\n");
+	//snprintf(buf, min(size, sizeof(word_buffer), word_buffer);
+	if (copy_from_user(buf, word_buffer, min(size, sizeof(word_buffer))))
+        {
+            return -EACCES;
+        }
+    //return strlen(buf);
+	return size;
 }
 
 static ssize_t dummy_write(struct file *file, const char __user *buf, size_t size, loff_t *ppos)
 {
-    char lcl_buf[64];
+    //char lcl_buf[64];
+    //memset(lcl_buf, 0, sizeof(lcl_buf));
 
-    memset(lcl_buf, 0, sizeof(lcl_buf));
+	memset(word_buffer, 0, MAX_WORD_LENGTH);
 
-    if (copy_from_user(lcl_buf, buf, min(size, sizeof(lcl_buf))))
+    //if (copy_from_user(lcl_buf, buf, min(size, sizeof(lcl_buf))))
+	if (copy_from_user(word_buffer, buf, min(size, sizeof(word_buffer))))
         {
             return -EACCES;
         }
 
-    printk("CS444 Dummy driver write %ld bytes: %s\r\n", size, lcl_buf);
+	word_size = min(size, sizeof(word_buffer));
+    //printk("CS444 Dummy driver write %ld bytes: %s\r\n", size, lcl_buf);
+	printk("CS444 Dummy driver write %ld bytes: %s\r\n", word_size, word_buffer);
 
     return size;
 }
@@ -135,10 +149,7 @@ static void led_heartbeat_function(unsigned long data)
 	unsigned long brightness = LED_OFF;
 	unsigned long delay = 0;
 	int current_action = -1;
-
-	//ptr = fopen("/dev/cs444_dummy","r");
 	
-
 	if (test_and_clear_bit(LED_BLINK_BRIGHTNESS_CHANGE, &led_cdev->work_flags))
 		led_cdev->blink_brightness = led_cdev->new_blink_brightness;
 
@@ -304,8 +315,11 @@ static void heartbeat_trig_activate(struct led_classdev *led_cdev)
 	}
 
 	//Character Device
-	int status = dummy_init();
-	printk("Status activate: %d", status);
+	dummy_init();
+	//printk("Status activate: %d", status);
+
+	//Allocate memory for word buffer
+	word_buffer = (char*) kmalloc(MAX_WORD_LENGTH * sizeof(char), GFP_USER);
 
 
 	setup_timer(&heartbeat_data->timer,
@@ -326,6 +340,9 @@ static void heartbeat_trig_deactivate(struct led_classdev *led_cdev)
 	//Character Device
 	dummy_exit();
 	printk("Status deactivate");
+
+	//Free memory for word buffer 
+	kfree(word_buffer);
 	
 	if (led_cdev->activated) {
 		del_timer_sync(&heartbeat_data->timer);
