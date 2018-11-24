@@ -28,14 +28,12 @@ public:
 			workingOn = 1;
 			isRunning1 = true;
 			std::cout << "Spot1 taken by "<< id << std::endl << std::flush;
-			displayStatus();
 			return 1;
 		}
 		else if(spot2.try_lock() && !isOverworked){
 			workingOn = 2;
 			isRunning2 = true;
 			std::cout << "Spot2 taken by "<< id << std::endl << std::flush;
-			displayStatus();
 			return 1;
 		}
 		else if(spot3.try_lock() && !isOverworked){
@@ -44,13 +42,11 @@ public:
 			isRunning3 = true;
 			std::cout << "Spot3 taken by "<< id << std::endl << std::flush;
 			std::cout << "Overworked!" << std::endl << std::flush;
-			displayStatus();
 			return 1;
 		}
 		else{
 			workingOn = -1;
 			std::cout << "Thread " << id << " unable to find open resource" << std::endl << std::flush;
-			displayStatus();
 			return 0;
 		}
 	}
@@ -85,7 +81,6 @@ public:
 			}
 			else{
 				unlock(1);
-				displayStatus();
 				return 0;
 			}
 		}
@@ -99,7 +94,6 @@ public:
 			}
 			else{
 				unlock(2);
-				displayStatus();
 				return 0;
 			}
 		}
@@ -114,7 +108,6 @@ public:
 					unlock(3);
 					std::cout << "No longer overworked!" << std::endl << std::flush;
 					workingOn = -1;
-					displayStatus();
 					return 0;
 				}
 				else{
@@ -126,7 +119,6 @@ public:
 			else{
 				std::cout << "Thread " << id << " done with resource " << workingOn << std::endl << std::flush;
 				workingOn = -1;
-				displayStatus();
 				return 0;
 			}
 		}
@@ -138,7 +130,6 @@ public:
 				return 0;
 			}
 			else{
-				displayStatus();
 				return 0;
 			}
 		}
@@ -148,7 +139,7 @@ public:
 	void doStuff(){
 		//Snooze for a bit
 		int seconds = rand() % 10 + 2;
-		std::cout << "Thread " << id << " snoozing for " << seconds << std::endl << std::flush;
+		//std::cout << "Thread " << id << " snoozing for " << seconds << std::endl << std::flush;
 		sleepTime(seconds);
 
 		//Try to reserve a spot 
@@ -156,8 +147,8 @@ public:
 
 		if(success){
 			//Act busy for a while
-			seconds = rand() % 10 + 2;
-			std::cout << "Thread " << id << " working for " << seconds << std::endl << std::flush;
+			seconds = rand() % 5 + 1;
+			//std::cout << "Thread " << id << " working for " << seconds << std::endl << std::flush;
 			sleepTime(seconds);
 			doneRoutine();
 		}
