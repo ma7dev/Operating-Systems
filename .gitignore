@@ -1,2 +1,3 @@
+.DS_Store/
 bzImage-qemux86.bin
 core-image-lsb-sdk-qemux86.ext4
