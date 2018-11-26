@@ -35,7 +35,7 @@ bool searcher(int num){
 // Delete last node in list for simplicity
 void deleter(){
     if(l.size() > 0)
-        l.erase(l.end());
+        l.pop_back();
 }
 
 // Executed by inserter threads. Cannot run together
@@ -111,17 +111,26 @@ public:
 		usleep(seconds * 1000000);
 	}
 
-	void unlock(int number){
+	void mUnlock(){
         switch(role){
             case 1 : {
+                fprintf(stdout, "Free searcher.\n");
+                fflush(stdout);
+
                 // nothing to unlock
                 break;
             }
             case 2 :{
+                fprintf(stdout, "Free Inserter.\n");
+                fflush(stdout);
+
                 mInsert.unlock();
                 break;
             }
             case 3 :{
+                fprintf(stdout, "Free deleter\n");
+                fflush(stdout);
+
                 mDelete.unlock();
                 mInsert.unlock();
                 mSearch.unlock();
@@ -131,6 +140,7 @@ public:
 
 
 	int doneRoutine(){
+
 
         if (role == 1){
             fprintf(stdout, "Searcher thread (id= %d ) finished.\n", id);
@@ -143,12 +153,6 @@ public:
             fprintf(stdout, "Deleter thread (id= %d ) finished.\n", id);
         }
 
-        // Iterate and print values of the list
-        // for (int n : l) {
-        //     cout << n;
-        // }
-        // cout << endl << flush;
-        //
         return 0;
     }
 
@@ -163,11 +167,11 @@ public:
         }
         else if (role == 2){
             fprintf(stdout, "Inserter thread (id= %d ) snoozing for %d\n", id, seconds);
-            //fflush(stdout);
+
         }
         else if (role == 3){
             fprintf(stdout, "Deleter thread (id= %d ) snoozing for %d\n", id, seconds);
-            //fflush(stdout);
+            
         }
 
 		sleepTime(seconds);
@@ -215,6 +219,7 @@ public:
                 //fflush(stdout);
             }
 
+            mUnlock();
 			//sleepTime(seconds);
 			doneRoutine();
 		}
@@ -231,9 +236,9 @@ int main() {
 	srand (time(NULL));
 
 	Worker* t1 = new Worker(1,1);
-	Worker* t2 = new Worker(2,1);
+	Worker* t2 = new Worker(2,2);
 	Worker* t3 = new Worker(3,2);
-	Worker* t4 = new Worker(4,2);
+	Worker* t4 = new Worker(4,3);
 	Worker* t5 = new Worker(5,3);
 
 	thread thread_1(&Worker::doStuff, t1);
