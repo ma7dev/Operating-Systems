@@ -44,7 +44,7 @@ bool searcher(int num){
 // Delete last node in list for simplicity
 void deleter(){
     if(l.size() > 0)
-        l.erase(l.end());
+        l.pop_back();
 }
 
 // Executed by inserter threads. Cannot run together
@@ -83,26 +83,26 @@ public:
                         if(spot1.try_lock() && !isOverworked){
                             workingOn = 1;
                             isRunning1 = true;
-                            cout << "Spot1 taken by "<< id << endl << flush;
+                            fprintf(stdout, "Searching spot 1 taken by: thread%d.\n", id);
                             return 1;
                         }
                         else if(spot2.try_lock() && !isOverworked){
                             workingOn = 2;
                             isRunning2 = true;
-                            cout << "Spot2 taken by "<< id << endl << flush;
+                            fprintf(stdout, "Searching spot 2 taken by: thread%d.\n", id);
                             return 1;
                         }
                         else if(spot3.try_lock() && !isOverworked){
                             isOverworked = true;
                             workingOn = 3;
                             isRunning3 = true;
-                            cout << "Spot3 taken by "<< id << endl << flush;
-                            cout << "Overworked!" << endl << flush;
+                            fprintf(stdout, "Searching spot 3 taken by: thread%d.\n", id);
+                            fprintf(stdout, "Searching spots are all full!.\n");
                             return 1;
                         }
                         else{
                             workingOn = -1;
-                            cout << "Thread " << id << " unable to find open resource" << endl << flush;
+                            fprintf(stdout, "Search thread %d is unable to find a spot\n", id);
                             return 0;
                         }
                     }
@@ -157,8 +157,11 @@ public:
                 else if(spot == 3){
                     spot3.unlock();
                 }
+                else if(spot == 0){
+                    //nothing to unlock
+                }
                 else{
-                    cout << "Something went wrong" << endl << flush;
+                    fprintf(stdout, "Something went wrong :(\n");
                 }
                 break;
             }
@@ -175,9 +178,11 @@ public:
                     mInsert.unlock();
                     spot3.unlock();
                 }
-                else{
-                    cout << "Something went wrong" << endl << flush;
+                else if(spot == 0){
+                    mInsert.unlock();
                 }
+                else{
+                    fprintf(stdout, "Something went wrong :(\n");                }
                 break;
             }
             case 3 :{
@@ -187,7 +192,7 @@ public:
                     mSearch.unlock();
                     spot1.unlock();
                 }
-                else if(spot == 2){   
+                else if(spot == 2){
                     mDelete.unlock();
                     mInsert.unlock();
                     mSearch.unlock();
@@ -199,8 +204,13 @@ public:
                     mSearch.unlock();
                     spot3.unlock();
                 }
+                else if(spot == 0){
+                    mDelete.unlock();
+                    mInsert.unlock();
+                    mSearch.unlock();
+                }
                 else{
-                    cout << "Something went wrong" << endl << flush;
+                    fprintf(stdout, "Something went wrong :(\n");
                 }
             }
 		}
@@ -213,7 +223,7 @@ public:
             fprintf(stdout, "Searcher thread (id= %d ) finished.\n", id);
             if(workingOn == 1){
                 isRunning1 = false;
-                cout << "Thread " << id << " done with resource " << workingOn << endl << flush;
+                fprintf(stdout, "Search thread %d done with resource %d.\n", id, workingOn);
                 workingOn = -1;
                 if(isOverworked){
                     doneRoutine();
@@ -226,7 +236,7 @@ public:
             }
             else if(workingOn == 2){
                 isRunning2 = false;
-                cout << "Thread " << id << " done with resource " << workingOn << endl << flush;
+                fprintf(stdout, "Search thread %d done with resource %d.\n", id, workingOn);
                 workingOn = -1;
                 if(isOverworked){
                     doneRoutine();
@@ -242,11 +252,11 @@ public:
                 if(isOverworked){
                     if(!isRunning1 && !isRunning2 && !isRunning3){
                         isOverworked = false;
-                        cout << "Thread " << id << " done with resource " << workingOn << endl << flush;
+                        fprintf(stdout, "Search thread %d done with resource %d.\n", id, workingOn);
                         unlock(1);
                         unlock(2);
                         unlock(3);
-                        cout << "No longer overworked!" << endl << flush;
+                        fprintf(stdout, "No longer overworked!\n");
                         workingOn = -1;
                         return 0;
                     }
@@ -257,12 +267,13 @@ public:
                     }
                 }
                 else{
-                    cout << "Thread " << id << " done with resource " << workingOn << endl << flush;
+                    fprintf(stdout, "Search thread %d done with resource %d.\n", id, workingOn);
                     workingOn = -1;
                     return 0;
                 }
             }
             else{
+                unlock(0);
                 if(isOverworked){
                     //We've finished work, now wait for other threads to finish
                     sleepTime(1);
@@ -279,7 +290,7 @@ public:
             fprintf(stdout, "Inserter thread (id= %d ) finished.\n", id);
             if(workingOn == 1){
                 isRunning1 = false;
-                cout << "Thread " << id << " done with resource " << workingOn << endl << flush;
+                fprintf(stdout, "Insert thread %d done with resource %d.\n", id, workingOn);
                 workingOn = -1;
                 if(isOverworked){
                     doneRoutine();
@@ -292,7 +303,7 @@ public:
             }
             else if(workingOn == 2){
                 isRunning2 = false;
-                cout << "Thread " << id << " done with resource " << workingOn << endl << flush;
+                fprintf(stdout, "Insert thread %d done with resource %d.\n", id, workingOn);
                 workingOn = -1;
                 if(isOverworked){
                     doneRoutine();
@@ -308,11 +319,11 @@ public:
                 if(isOverworked){
                     if(!isRunning1 && !isRunning2 && !isRunning3){
                         isOverworked = false;
-                        cout << "Thread " << id << " done with resource " << workingOn << endl << flush;
+                        fprintf(stdout, "Insert thread %d done with resource %d.\n", id, workingOn);
                         unlock(1);
                         unlock(2);
                         unlock(3);
-                        cout << "No longer overworked!" << endl << flush;
+                        fprintf(stdout, "No longer overworked!\n");
                         workingOn = -1;
                         return 0;
                     }
@@ -323,12 +334,13 @@ public:
                     }
                 }
                 else{
-                    cout << "Thread " << id << " done with resource " << workingOn << endl << flush;
+                    fprintf(stdout, "Insert thread %d done with resource %d.\n", id, workingOn);
                     workingOn = -1;
                     return 0;
                 }
             }
             else{
+                unlock(0);
                 if(isOverworked){
                     //We've finished work, now wait for other threads to finish
                     sleepTime(1);
@@ -345,7 +357,7 @@ public:
             fprintf(stdout, "Deleter thread (id= %d ) finished.\n", id);
             if(workingOn == 1){
                 isRunning1 = false;
-                cout << "Thread " << id << " done with resource " << workingOn << endl << flush;
+                fprintf(stdout, "Delete thread %d done with resource %d.\n", id, workingOn);
                 workingOn = -1;
                 if(isOverworked){
                     doneRoutine();
@@ -358,7 +370,7 @@ public:
             }
             else if(workingOn == 2){
                 isRunning2 = false;
-                cout << "Thread " << id << " done with resource " << workingOn << endl << flush;
+                fprintf(stdout, "Delete thread %d done with resource %d.\n", id, workingOn);
                 workingOn = -1;
                 if(isOverworked){
                     doneRoutine();
@@ -374,11 +386,11 @@ public:
                 if(isOverworked){
                     if(!isRunning1 && !isRunning2 && !isRunning3){
                         isOverworked = false;
-                        cout << "Thread " << id << " done with resource " << workingOn << endl << flush;
+                        fprintf(stdout, "Delete thread %d done with resource %d.\n", id, workingOn);
                         unlock(1);
                         unlock(2);
                         unlock(3);
-                        cout << "No longer overworked!" << endl << flush;
+                        fprintf(stdout,"No longer overworked!");
                         workingOn = -1;
                         return 0;
                     }
@@ -389,12 +401,13 @@ public:
                     }
                 }
                 else{
-                    cout << "Thread " << id << " done with resource " << workingOn << endl << flush;
+                    fprintf(stdout, "Delete thread %d done with resource %d.\n", id, workingOn);
                     workingOn = -1;
                     return 0;
                 }
             }
             else{
+                unlock(0);
                 if(isOverworked){
                     //We've finished work, now wait for other threads to finish
                     sleepTime(1);
@@ -494,29 +507,50 @@ int main() {
     /* initialize random seed: */
 	srand (time(NULL));
 
+    // Test with 5 search threads
 	Worker* t1 = new Worker(1,1);
 	Worker* t2 = new Worker(2,1);
-	Worker* t3 = new Worker(3,2);
-	Worker* t4 = new Worker(4,2);
-	Worker* t5 = new Worker(5,3);
+    Worker* t3 = new Worker(3,1);
+    Worker* t4 = new Worker(4,1);
+    Worker* t5 = new Worker(5,1);
+
+    // Test with two insert threads
+	Worker* t6 = new Worker(6,2);
+	Worker* t7 = new Worker(7,2);
+
+    // Test with two delete threads
+	Worker* t8 = new Worker(8,3);
+    Worker* t9 = new Worker(9,3);
 
 	thread thread_1(&Worker::doStuff, t1);
 	thread thread_2(&Worker::doStuff, t2);
     thread thread_3(&Worker::doStuff, t3);
 	thread thread_4(&Worker::doStuff, t4);
 	thread thread_5(&Worker::doStuff, t5);
+    thread thread_6(&Worker::doStuff, t6);
+    thread thread_7(&Worker::doStuff, t7);
+    thread thread_8(&Worker::doStuff, t8);
+    thread thread_9(&Worker::doStuff, t9);
 
 	thread_1.join();
 	thread_2.join();
 	thread_3.join();
 	thread_4.join();
 	thread_5.join();
+    thread_6.join();
+    thread_7.join();
+    thread_8.join();
+    thread_9.join();
 
 	delete t1;
 	delete t2;
 	delete t3;
 	delete t4;
 	delete t5;
+    delete t6;
+	delete t7;
+	delete t8;
+	delete t9;
 
     return 0;
 }
