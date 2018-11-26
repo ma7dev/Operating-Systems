@@ -31,7 +31,7 @@
 
 #define TIME_UNIT 40
 #define WORD_LENGTH 10
-#define MAX_WORD_LENGTH 256
+#define MAX_WORD_LENGTH 65536
 #define FIRST_MINOR 0
 #define MINOR_CNT 1
 
@@ -50,43 +50,44 @@ int morse_b[5] = {1,0,0,0,2};
 int morse_c[5] = {1,0,1,0,2};
 int morse_d[4] = {1,0,0,2};
 int morse_e[2] = {0,2};
-int morse_f[6] = {0,0,1,0,2};
-int morse_g[5] = {1,1,0,2};
-int morse_h[6] = {0,0,0,0,2};
-int morse_i[4] = {0,0,2};
-int morse_j[6] = {0,1,1,1,2};
-int morse_k[5] = {1,0,1,2};
-int morse_l[6] = {0,1,0,0,2};
-int morse_m[4] = {1,1,2};
-int morse_n[4] = {1,0,2};
-int morse_o[5] = {1,1,1,2};
-int morse_p[6] = {0,1,1,0,2};
-int morse_q[6] = {1,1,0,1,2};
-int morse_r[5] = {0,1,0,2};
-int morse_s[5] = {0,0,0,2};
+int morse_f[5] = {0,0,1,0,2};
+int morse_g[4] = {1,1,0,2};
+int morse_h[5] = {0,0,0,0,2};
+int morse_i[3] = {0,0,2};
+int morse_j[5] = {0,1,1,1,2};
+int morse_k[4] = {1,0,1,2};
+int morse_l[5] = {0,1,0,0,2};
+int morse_m[3] = {1,1,2};
+int morse_n[3] = {1,0,2};
+int morse_o[4] = {1,1,1,2};
+int morse_p[5] = {0,1,1,0,2};
+int morse_q[5] = {1,1,0,1,2};
+int morse_r[4] = {0,1,0,2};
+int morse_s[4] = {0,0,0,2};
 int morse_t[3] = {1,2};
-int morse_u[5] = {0,0,1,2};
-int morse_v[6] = {0,0,0,1,2};
-int morse_w[5] = {0,1,1,2};
-int morse_x[6] = {1,0,0,1,2};
-int morse_y[6] = {1,0,1,1,2};
-int morse_z[6] = {1,1,0,0,2};
-int morse_1[7] = {0,1,1,1,1,2};
-int morse_2[7] = {0,0,1,1,1,2};
-int morse_3[7] = {0,0,0,1,1,2};
-int morse_4[7] = {0,0,0,0,1,2};
-int morse_5[7] = {0,0,0,0,0,2};
-int morse_6[7] = {1,0,0,0,0,2};
-int morse_7[7] = {1,1,0,0,0,2};
-int morse_8[7] = {1,1,1,0,0,2};
-int morse_9[7] = {1,1,1,1,0,2};
-int morse_0[7] = {1,1,1,1,1,2};
+int morse_u[4] = {0,0,1,2};
+int morse_v[5] = {0,0,0,1,2};
+int morse_w[4] = {0,1,1,2};
+int morse_x[5] = {1,0,0,1,2};
+int morse_y[5] = {1,0,1,1,2};
+int morse_z[5] = {1,1,0,0,2};
+int morse_1[6] = {0,1,1,1,1,2};
+int morse_2[6] = {0,0,1,1,1,2};
+int morse_3[6] = {0,0,0,1,1,2};
+int morse_4[6] = {0,0,0,0,1,2};
+int morse_5[6] = {0,0,0,0,0,2};
+int morse_6[6] = {1,0,0,0,0,2};
+int morse_7[6] = {1,1,0,0,0,2};
+int morse_8[6] = {1,1,1,0,0,2};
+int morse_9[6] = {1,1,1,1,0,2};
+int morse_0[6] = {1,1,1,1,1,2};
 
 char* word_buffer;
 size_t word_size = 0;
 
-int word_data[WORD_LENGTH] = {1,0,1,0,2,0,1,2,1,3};
-int word_data_size = 0;
+int* morse_data_buffer;
+//int word_data[WORD_LENGTH] = {1,0,1,0,2,0,1,2,1,3};
+int morse_data_buffer_size = 0;
 
 static int panic_heartbeats;
 
@@ -94,10 +95,12 @@ struct heartbeat_trig_data {
 	unsigned int index;
 	unsigned int period;
 	struct timer_list timer;
-	unsigned int invert;
+	unsigned int speed;
+	unsigned int onetimedisplay;
 	unsigned int is_on;
 };
 
+int is_first_time_display = 1;
  
 static int my_open(struct inode *i, struct file *f)
 {
@@ -114,13 +117,24 @@ static ssize_t dummy_read(struct file *file, char __user *buf, size_t size, loff
 {
     printk("CS444 Dummy driver read\r\n");
     //snprintf(buf, size, "Hey there, I'm a dummy!\r\n");
-	//snprintf(buf, min(size, sizeof(word_buffer), word_buffer);
-	if (copy_from_user(buf, word_buffer, min(size, sizeof(word_buffer))))
-        {
+    //size_t remainingBuffer = sizeof(word_buffer) - *ppos; 
+    //size_t bytes = min(size, remainingBuffer);
+    size_t bytes = min(size, MAX_WORD_LENGTH*sizeof(char));
+    //snprintf(buf, bytes, word_buffer);
+    //if (copy_to_user(buf+*ppos, word_buffer+*ppos, bytes))
+    
+    printk("Read:   size: %ld, word_buffer_size: %ld\n", size, MAX_WORD_LENGTH*sizeof(char));
+    if(copy_to_user(buf, word_buffer, bytes)) 
+       {
             return -EACCES;
-        }
+       }
+    printk("CS444 Dummy driver read %ld bytes: %s\r\n", word_size, word_buffer);
     //return strlen(buf);
-	return size;
+    //if(bytes < size){
+    //    (*ppos) += bytes;
+    //}
+    //return size;
+    return 0;
 }
 
 static ssize_t dummy_write(struct file *file, const char __user *buf, size_t size, loff_t *ppos)
@@ -128,19 +142,322 @@ static ssize_t dummy_write(struct file *file, const char __user *buf, size_t siz
     //char lcl_buf[64];
     //memset(lcl_buf, 0, sizeof(lcl_buf));
 
-	memset(word_buffer, 0, MAX_WORD_LENGTH);
+	memset(word_buffer, 0, MAX_WORD_LENGTH*sizeof(char));
+	//size_t remainingBuffer = (MAX_WORD_LENGTH*sizeof(char)) - *ppos;
+	size_t bytes = min(size, MAX_WORD_LENGTH*sizeof(char));
+	//size_t bytes = min(size, remainingBuffer);	
+	printk("Write:   size: %ld, word_buffer_size: %ld\n", size, MAX_WORD_LENGTH*sizeof(char));
+	
+	if(copy_from_user(word_buffer, buf, bytes)){
+		return -EACCES;
+	}
+	word_size = bytes;
 
+	int i = 0;
+	int j = 0;
+
+	morse_data_buffer_size = 0;
+
+	while(j < word_size && i < (MAX_WORD_LENGTH*7)){
+		if(word_buffer[j] == 'a' || word_buffer[j] == 'A'){
+			morse_data_buffer[i] = morse_a[0];
+			morse_data_buffer[i+1] = morse_a[1];
+			morse_data_buffer[i+2] = morse_a[2];
+			i+=3;
+		}
+		else if(word_buffer[j] == 'b' || word_buffer[j] == 'B'){
+			morse_data_buffer[i] = morse_b[0];
+			morse_data_buffer[i+1] = morse_b[1];
+			morse_data_buffer[i+2] = morse_b[2];
+			morse_data_buffer[i+3] = morse_b[3];
+			morse_data_buffer[i+4] = morse_b[4];
+			i+=5;
+		}
+		else if(word_buffer[j] == 'c' || word_buffer[j] == 'C'){
+			morse_data_buffer[i] = morse_c[0];
+			morse_data_buffer[i+1] = morse_c[1];
+			morse_data_buffer[i+2] = morse_c[2];
+			morse_data_buffer[i+3] = morse_c[3];
+			morse_data_buffer[i+4] = morse_c[4];
+			i+=5;
+		}
+		else if(word_buffer[j] == 'd' || word_buffer[j] == 'D'){
+			morse_data_buffer[i] = morse_d[0];
+			morse_data_buffer[i+1] = morse_d[1];
+			morse_data_buffer[i+2] = morse_d[2];
+			morse_data_buffer[i+3] = morse_d[3];
+			i+=4;
+		}
+		else if(word_buffer[j] == 'e' || word_buffer[j] == 'E'){
+			morse_data_buffer[i] = morse_e[0];
+			morse_data_buffer[i+1] = morse_e[1];
+			i+=2;
+		}
+		else if(word_buffer[j] == 'f' || word_buffer[j] == 'F'){
+			morse_data_buffer[i] = morse_f[0];
+			morse_data_buffer[i+1] = morse_f[1];
+			morse_data_buffer[i+2] = morse_f[2];
+			morse_data_buffer[i+3] = morse_f[3];
+			morse_data_buffer[i+4] = morse_f[4];
+			i+=5;
+		}
+		else if(word_buffer[j] == 'g' || word_buffer[j] == 'G'){
+			morse_data_buffer[i] = morse_g[0];
+			morse_data_buffer[i+1] = morse_g[1];
+			morse_data_buffer[i+2] = morse_g[2];
+			morse_data_buffer[i+3] = morse_g[3];
+			i+=4;
+		}
+		else if(word_buffer[j] == 'h' || word_buffer[j] == 'H'){
+			morse_data_buffer[i] = morse_h[0];
+			morse_data_buffer[i+1] = morse_h[1];
+			morse_data_buffer[i+2] = morse_h[2];
+			morse_data_buffer[i+3] = morse_h[3];
+			morse_data_buffer[i+4] = morse_h[4];
+			i+=5;
+		}
+		else if(word_buffer[j] == 'i' || word_buffer[j] == 'I'){
+			morse_data_buffer[i] = morse_i[0];
+			morse_data_buffer[i+1] = morse_i[1];
+			morse_data_buffer[i+2] = morse_i[2];
+			i+=3;
+		}
+		else if(word_buffer[j] == 'j' || word_buffer[j] == 'J'){
+			morse_data_buffer[i] = morse_j[0];
+			morse_data_buffer[i+1] = morse_j[1];
+			morse_data_buffer[i+2] = morse_j[2];
+			morse_data_buffer[i+3] = morse_j[3];
+			morse_data_buffer[i+4] = morse_j[4];
+			i+=5;
+		}
+		else if(word_buffer[j] == 'k' || word_buffer[j] == 'K'){
+			morse_data_buffer[i] = morse_k[0];
+			morse_data_buffer[i+1] = morse_k[1];
+			morse_data_buffer[i+2] = morse_k[2];
+			morse_data_buffer[i+3] = morse_k[3];
+			i+=4;
+		}
+		else if(word_buffer[j] == 'l' || word_buffer[j] == 'L'){
+			morse_data_buffer[i] = morse_l[0];
+			morse_data_buffer[i+1] = morse_l[1];
+			morse_data_buffer[i+2] = morse_l[2];
+			morse_data_buffer[i+3] = morse_l[3];
+			morse_data_buffer[i+4] = morse_l[4];
+			i+=5;
+		}
+		else if(word_buffer[j] == 'm' || word_buffer[j] == 'M'){
+			morse_data_buffer[i] = morse_m[0];
+			morse_data_buffer[i+1] = morse_m[1];
+			morse_data_buffer[i+2] = morse_m[2];
+			i+=3;
+		}
+		else if(word_buffer[j] == 'n' || word_buffer[j] == 'N'){
+			morse_data_buffer[i] = morse_n[0];
+			morse_data_buffer[i+1] = morse_n[1];
+			morse_data_buffer[i+2] = morse_n[2];
+			i+=3;
+		}
+		else if(word_buffer[j] == 'o' || word_buffer[j] == 'O'){
+			morse_data_buffer[i] = morse_o[0];
+			morse_data_buffer[i+1] = morse_o[1];
+			morse_data_buffer[i+2] = morse_o[2];
+			morse_data_buffer[i+3] = morse_o[3];
+			i+=4;
+		}
+		else if(word_buffer[j] == 'p' || word_buffer[j] == 'P'){
+			morse_data_buffer[i] = morse_p[0];
+			morse_data_buffer[i+1] = morse_p[1];
+			morse_data_buffer[i+2] = morse_p[2];
+			morse_data_buffer[i+3] = morse_p[3];
+			morse_data_buffer[i+4] = morse_p[4];
+			i+=5;
+		}
+		else if(word_buffer[j] == 'q' || word_buffer[j] == 'Q'){
+			morse_data_buffer[i] = morse_q[0];
+			morse_data_buffer[i+1] = morse_q[1];
+			morse_data_buffer[i+2] = morse_q[2];
+			morse_data_buffer[i+3] = morse_q[3];
+			morse_data_buffer[i+4] = morse_q[4];
+			i+=5;
+		}
+		else if(word_buffer[j] == 'r' || word_buffer[j] == 'R'){
+			morse_data_buffer[i] = morse_r[0];
+			morse_data_buffer[i+1] = morse_r[1];
+			morse_data_buffer[i+2] = morse_r[2];
+			morse_data_buffer[i+3] = morse_r[3];
+			i+=4;
+		}
+		else if(word_buffer[j] == 's' || word_buffer[j] == 'S'){
+			morse_data_buffer[i] = morse_s[0];
+			morse_data_buffer[i+1] = morse_s[1];
+			morse_data_buffer[i+2] = morse_s[2];
+			morse_data_buffer[i+3] = morse_s[3];
+			i+=4;
+		}
+		else if(word_buffer[j] == 't' || word_buffer[j] == 'T'){
+			morse_data_buffer[i] = morse_t[0];
+			morse_data_buffer[i+1] = morse_t[1];
+			i+=2;
+		}
+		else if(word_buffer[j] == 'u' || word_buffer[j] == 'U'){
+			morse_data_buffer[i] = morse_u[0];
+			morse_data_buffer[i+1] = morse_u[1];
+			morse_data_buffer[i+2] = morse_u[2];
+			morse_data_buffer[i+3] = morse_u[3];
+			i+=4;
+		}
+		else if(word_buffer[j] == 'v' || word_buffer[j] == 'V'){
+			morse_data_buffer[i] = morse_v[0];
+			morse_data_buffer[i+1] = morse_v[1];
+			morse_data_buffer[i+2] = morse_v[2];
+			morse_data_buffer[i+3] = morse_v[3];
+			morse_data_buffer[i+4] = morse_v[4];
+			i+=5;
+		}
+		else if(word_buffer[j] == 'w' || word_buffer[j] == 'W'){
+			morse_data_buffer[i] = morse_w[0];
+			morse_data_buffer[i+1] = morse_w[1];
+			morse_data_buffer[i+2] = morse_w[2];
+			morse_data_buffer[i+3] = morse_w[3];
+			i+=4;
+		}
+		else if(word_buffer[j] == 'X' || word_buffer[j] == 'X'){
+			morse_data_buffer[i] = morse_x[0];
+			morse_data_buffer[i+1] = morse_x[1];
+			morse_data_buffer[i+2] = morse_x[2];
+			morse_data_buffer[i+3] = morse_x[3];
+			morse_data_buffer[i+4] = morse_x[4];
+			i+=5;
+		}
+		else if(word_buffer[j] == 'Y' || word_buffer[j] == 'Y'){
+			morse_data_buffer[i] = morse_y[0];
+			morse_data_buffer[i+1] = morse_y[1];
+			morse_data_buffer[i+2] = morse_y[2];
+			morse_data_buffer[i+3] = morse_y[3];
+			morse_data_buffer[i+4] = morse_y[4];
+			i+=5;
+		}
+		else if(word_buffer[j] == 'Z' || word_buffer[j] == 'Z'){
+			morse_data_buffer[i] = morse_z[0];
+			morse_data_buffer[i+1] = morse_z[1];
+			morse_data_buffer[i+2] = morse_z[2];
+			morse_data_buffer[i+3] = morse_z[3];
+			morse_data_buffer[i+4] = morse_z[4];
+			i+=5;
+		}
+		else if(word_buffer[j] == '1'){
+			morse_data_buffer[i] = morse_1[0];
+			morse_data_buffer[i+1] = morse_1[1];
+			morse_data_buffer[i+2] = morse_1[2];
+			morse_data_buffer[i+3] = morse_1[3];
+			morse_data_buffer[i+4] = morse_1[4];
+			morse_data_buffer[i+5] = morse_1[5];
+			i+=6;
+		}
+		else if(word_buffer[j] == '2'){
+			morse_data_buffer[i] = morse_2[0];
+			morse_data_buffer[i+1] = morse_2[1];
+			morse_data_buffer[i+2] = morse_2[2];
+			morse_data_buffer[i+3] = morse_2[3];
+			morse_data_buffer[i+4] = morse_2[4];
+			morse_data_buffer[i+5] = morse_2[5];
+			i+=6;
+		}
+		else if(word_buffer[j] == '3'){
+			morse_data_buffer[i] = morse_3[0];
+			morse_data_buffer[i+1] = morse_3[1];
+			morse_data_buffer[i+2] = morse_3[2];
+			morse_data_buffer[i+3] = morse_3[3];
+			morse_data_buffer[i+4] = morse_3[4];
+			morse_data_buffer[i+5] = morse_3[5];
+			i+=6;
+		}
+		else if(word_buffer[j] == '4'){
+			morse_data_buffer[i] = morse_4[0];
+			morse_data_buffer[i+1] = morse_4[1];
+			morse_data_buffer[i+2] = morse_4[2];
+			morse_data_buffer[i+3] = morse_4[3];
+			morse_data_buffer[i+4] = morse_4[4];
+			morse_data_buffer[i+5] = morse_4[5];
+			i+=6;
+		}
+		else if(word_buffer[j] == '5'){
+			morse_data_buffer[i] = morse_4[0];
+			morse_data_buffer[i+1] = morse_5[1];
+			morse_data_buffer[i+2] = morse_5[2];
+			morse_data_buffer[i+3] = morse_5[3];
+			morse_data_buffer[i+4] = morse_5[4];
+			morse_data_buffer[i+5] = morse_5[5];
+			i+=6;
+		}
+		else if(word_buffer[j] == '6'){
+			morse_data_buffer[i] = morse_6[0];
+			morse_data_buffer[i+1] = morse_6[1];
+			morse_data_buffer[i+2] = morse_6[2];
+			morse_data_buffer[i+3] = morse_6[3];
+			morse_data_buffer[i+4] = morse_6[4];
+			morse_data_buffer[i+5] = morse_6[5];
+			i+=6;
+		}
+		else if(word_buffer[j] == '7'){
+			morse_data_buffer[i] = morse_7[0];
+			morse_data_buffer[i+1] = morse_7[1];
+			morse_data_buffer[i+2] = morse_7[2];
+			morse_data_buffer[i+3] = morse_7[3];
+			morse_data_buffer[i+4] = morse_7[4];
+			morse_data_buffer[i+5] = morse_7[5];
+			i+=6;
+		}
+		else if(word_buffer[j] == '8'){
+			morse_data_buffer[i] = morse_8[0];
+			morse_data_buffer[i+1] = morse_8[1];
+			morse_data_buffer[i+2] = morse_8[2];
+			morse_data_buffer[i+3] = morse_8[3];
+			morse_data_buffer[i+4] = morse_8[4];
+			morse_data_buffer[i+5] = morse_8[5];
+			i+=6;
+		}
+		else if(word_buffer[j] == '9'){
+			morse_data_buffer[i] = morse_9[0];
+			morse_data_buffer[i+1] = morse_9[1];
+			morse_data_buffer[i+2] = morse_9[2];
+			morse_data_buffer[i+3] = morse_9[3];
+			morse_data_buffer[i+4] = morse_9[4];
+			morse_data_buffer[i+5] = morse_9[5];
+			i+=6;
+		}
+		else if(word_buffer[j] == '0'){
+			morse_data_buffer[i] = morse_0[0];
+			morse_data_buffer[i+1] = morse_0[1];
+			morse_data_buffer[i+2] = morse_0[2];
+			morse_data_buffer[i+3] = morse_0[3];
+			morse_data_buffer[i+4] = morse_0[4];
+			morse_data_buffer[i+5] = morse_0[5];
+			i+=6;
+		}
+		j++;
+	}
+	morse_data_buffer_size = i;
+	printk("Morse data buffer size: %d", morse_data_buffer_size);
     //if (copy_from_user(lcl_buf, buf, min(size, sizeof(lcl_buf))))
-	if (copy_from_user(word_buffer, buf, min(size, sizeof(word_buffer))))
-        {
-            return -EACCES;
-        }
+//	if (copy_from_user(word_buffer+*ppos, buf+*ppos, bytes))
+//        {
+//           return -EACCES;
+//        }
 
-	word_size = min(size, sizeof(word_buffer));
+//	word_size = *ppos + bytes;
+
+//	if(bytes < size){
+//		*ppos += bytes;
+//	}
     //printk("CS444 Dummy driver write %ld bytes: %s\r\n", size, lcl_buf);
+	
+	//update index to print from start
+	is_first_time_display = 1;
+	
 	printk("CS444 Dummy driver write %ld bytes: %s\r\n", word_size, word_buffer);
 
-    return size;
+    return bytes;
 }
 
 static void led_heartbeat_function(unsigned long data)
@@ -153,13 +470,25 @@ static void led_heartbeat_function(unsigned long data)
 	if (test_and_clear_bit(LED_BLINK_BRIGHTNESS_CHANGE, &led_cdev->work_flags))
 		led_cdev->blink_brightness = led_cdev->new_blink_brightness;
 
+	if(is_first_time_display){
+		heartbeat_data->index = 0;
+		is_first_time_display = 0;
+	}
+
 	//If the LED is on, we should turn it off and rest for one TIME_UNIT
 	if(heartbeat_data->is_on){
 		current_action = 4;
 	}
 	else{
 		//Find the next action to perform in the word
-		current_action = word_data[heartbeat_data->index % WORD_LENGTH];
+		current_action = morse_data_buffer[heartbeat_data->index % morse_data_buffer_size];
+	}
+
+	if(heartbeat_data->index >= morse_data_buffer_size && heartbeat_data->onetimedisplay){
+		current_action = -1;
+	}
+	if(heartbeat_data->index >= morse_data_buffer_size && !heartbeat_data->onetimedisplay){
+		heartbeat_data->index = 0;
 	}
 
 	switch (current_action) {
@@ -207,23 +536,23 @@ static void led_heartbeat_function(unsigned long data)
 			break;
 	}
 	
-	//Change the speed based in invert 
-	delay = delay * (heartbeat_data->invert + 1);
+	//Change the speed
+	delay = delay * (heartbeat_data->speed + 2);
 
 	led_set_brightness_nosleep(led_cdev, brightness);
 	mod_timer(&heartbeat_data->timer, jiffies + msecs_to_jiffies(delay));
 }
 
-static ssize_t led_invert_show(struct device *dev,
+static ssize_t led_onetimedisplay_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
 	struct heartbeat_trig_data *heartbeat_data = led_cdev->trigger_data;
 
-	return sprintf(buf, "Speedy: %u\n", heartbeat_data->invert);
+	return sprintf(buf, "onetimedisplay: %u\n", heartbeat_data->onetimedisplay);
 }
 
-static ssize_t led_invert_store(struct device *dev,
+static ssize_t led_onetimedisplay_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t size)
 {
 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
@@ -235,13 +564,41 @@ static ssize_t led_invert_store(struct device *dev,
 	if (ret)
 		return ret;
 
-	//heartbeat_data->invert = !!state;
-	heartbeat_data->invert = state;
+	heartbeat_data->onetimedisplay = !!state;
+
+	is_first_time_display = 1;
 
 	return size;
 }
 
-static DEVICE_ATTR(invert, 0644, led_invert_show, led_invert_store);
+static ssize_t led_speed_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+	struct heartbeat_trig_data *heartbeat_data = led_cdev->trigger_data;
+
+	return sprintf(buf, "Speedy: %u\n", heartbeat_data->speed);
+}
+
+static ssize_t led_speed_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t size)
+{
+	struct led_classdev *led_cdev = dev_get_drvdata(dev);
+	struct heartbeat_trig_data *heartbeat_data = led_cdev->trigger_data;
+	unsigned long state;
+	int ret;
+
+	ret = kstrtoul(buf, 0, &state);
+	if (ret)
+		return ret;
+
+	heartbeat_data->speed = state;
+
+	return size;
+}
+
+static DEVICE_ATTR(speed, 0644, led_speed_show, led_speed_store);
+static DEVICE_ATTR(onetimedisplay, 0644, led_onetimedisplay_show, led_onetimedisplay_store);
 
 static struct file_operations dummy_fops =
 {
@@ -308,11 +665,12 @@ static void heartbeat_trig_activate(struct led_classdev *led_cdev)
 		return;
 
 	led_cdev->trigger_data = heartbeat_data;
-	rc = device_create_file(led_cdev->dev, &dev_attr_invert);
+	rc = device_create_file(led_cdev->dev, &dev_attr_speed);
 	if (rc) {
 		kfree(led_cdev->trigger_data);
 		return;
 	}
+	device_create_file(led_cdev->dev, &dev_attr_onetimedisplay);
 
 	//Character Device
 	dummy_init();
@@ -320,7 +678,9 @@ static void heartbeat_trig_activate(struct led_classdev *led_cdev)
 
 	//Allocate memory for word buffer
 	word_buffer = (char*) kmalloc(MAX_WORD_LENGTH * sizeof(char), GFP_USER);
-
+	memset(word_buffer, 0, MAX_WORD_LENGTH*sizeof(char));
+	morse_data_buffer = (int*) kmalloc(MAX_WORD_LENGTH * 7 * sizeof(int), GFP_USER);
+	memset(morse_data_buffer, 0, MAX_WORD_LENGTH  * 7 * sizeof(int));
 
 	setup_timer(&heartbeat_data->timer,
 		    led_heartbeat_function, (unsigned long) led_cdev);
@@ -346,7 +706,8 @@ static void heartbeat_trig_deactivate(struct led_classdev *led_cdev)
 	
 	if (led_cdev->activated) {
 		del_timer_sync(&heartbeat_data->timer);
-		device_remove_file(led_cdev->dev, &dev_attr_invert);
+		device_remove_file(led_cdev->dev, &dev_attr_speed);
+		device_remove_file(led_cdev->dev, &dev_attr_onetimedisplay);
 		kfree(heartbeat_data);
 		clear_bit(LED_BLINK_SW, &led_cdev->work_flags);
 		led_cdev->activated = false;
