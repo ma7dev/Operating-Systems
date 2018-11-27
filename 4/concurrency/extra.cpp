@@ -220,7 +220,6 @@ public:
 	int doneRoutine() {
 
         if (role == 1){
-            fprintf(stdout, "Searcher thread (id= %d ) finished.\n", id);
             if(workingOn == 1){
                 isRunning1 = false;
                 fprintf(stdout, "Search thread %d done with resource %d.\n", id, workingOn);
